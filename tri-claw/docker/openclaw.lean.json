@@ -84,7 +84,7 @@
         "enabled": true,
         "config": {
           "enabled": true,
-          "timeoutMs": 120000,
+          "timeoutMs": 300000,
           "transport": "chutes_classify",
           "queryMode": "text_extract",
           "logDecisions": true,
@@ -107,8 +107,8 @@
           },
           "output": {
             "enabled": true,
-            "classifyUrl": "https://astroboi-haloqwen-output-guard.chutes.ai/v1/classify",
-            "classifyModel": "haloqwen-output-guard",
+            "classifyUrl": "http://host.docker.internal:8001/v1/classify",
+            "classifyModel": "Qwen/Qwen3Guard-Stream-0.6B",
             "payloadMode": "full_context",
             "queryMode": "text_extract",
             "refusalText": "Blocked by output guard model."

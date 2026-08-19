@@ -4,7 +4,7 @@ import type { JudgeResult } from "../types.js";
 
 /**
  * Judge upstream auth: matches `judge.provider` in tri-judge config via `JUDGE_LLM_PROVIDER`
- * (`chutes` default, or `openrouter`). OpenClaw may still use both keys independently.
+ * (`chutes` default, `openlux`, or `openrouter`). OpenClaw may still use keys independently.
  */
 function judgeAuthHeaders(urls: ResolvedServiceUrls): Record<string, string> {
   const provider = (process.env.JUDGE_LLM_PROVIDER ?? "chutes").trim().toLowerCase();
@@ -13,6 +13,12 @@ function judgeAuthHeaders(urls: ResolvedServiceUrls): Record<string, string> {
       return {};
     }
     return { "X-OpenRouter-Api-Key": urls.openrouterApiKey };
+  }
+  if (provider === "openlux") {
+    if (!urls.openluxApiKey) {
+      return {};
+    }
+    return { "X-OpenLux-Api-Key": urls.openluxApiKey };
   }
   if (!urls.chutesApiKey) {
     return {};

@@ -1,0 +1,4 @@
+# Qwen3Guard-Stream-0.6B local classify server (scripts/serve_qwen3guard_stream.py).
+# Stream's trust_remote_code modeling file targets transformers 4.55; Halo stays on 5.x
+# in .venv-halo-guard. Torch is reused from that venv via a .pth file.
+transformers==4.55.4

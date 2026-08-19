@@ -18,6 +18,8 @@ wheels/
 
 # Virtual environments
 *.venv
+.venv-halo-guard/
+.venv-qwen3guard/
 
 # Env files
 *.env

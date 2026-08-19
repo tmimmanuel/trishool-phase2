@@ -6,7 +6,7 @@ import { semverToAlignetSpecVersion } from "./alignet-spec-version.js";
 import { JudgeClient } from "./judge-client.js";
 
 const MISSING_UPSTREAM_API_KEY =
-  "Missing upstream API key. Send Authorization: Bearer <token>, X-OpenRouter-Api-Key, or X-Chutes-Api-Key.";
+  "Missing upstream API key. Send Authorization: Bearer <token>, X-OpenRouter-Api-Key, X-OpenLux-Api-Key, or X-Chutes-Api-Key.";
 
 
 /** Per-request secret forwarded to the LLM as `Authorization: Bearer` (Chutes + OpenRouter compatible). */
@@ -26,6 +26,11 @@ function resolveUpstreamApiKeyFromHeaders(
   const orLine = Array.isArray(openrouter) ? openrouter[0] : openrouter;
   if (typeof orLine === "string" && orLine.trim()) {
     return orLine.trim();
+  }
+  const openlux = headers["x-openlux-api-key"];
+  const openluxLine = Array.isArray(openlux) ? openlux[0] : openlux;
+  if (typeof openluxLine === "string" && openluxLine.trim()) {
+    return openluxLine.trim();
   }
   const chutes = headers["x-chutes-api-key"];
   const chutesLine = Array.isArray(chutes) ? chutes[0] : chutes;

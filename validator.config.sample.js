@@ -31,8 +31,9 @@ module.exports = {
         OPENCLAW_GATEWAY_PASSWORD: "<your-gateway-password>",
         CHUTES_API_KEY: "<your-chutes-api-key>",
         OPENROUTER_API_KEY: "<optional-openrouter-key>",
-        // Judge tri-judge: chutes (default) or openrouter — must match tri-judge/docker/judge.lean.json judge.provider
-        JUDGE_LLM_PROVIDER: "chutes",
+        OPENLUX_API_KEY: "<optional-openlux-key>",
+        // Judge tri-judge: chutes (default), openlux, or openrouter — must match tri-judge/docker/judge.lean.json judge.provider
+        JUDGE_LLM_PROVIDER: "openlux",
       },
       args: ["--netuid", "23", "--subtensor.network", "finney", "--wallet.name", "your_wallet_name", "--wallet.hotkey", "your_hotkey_name"],
     }

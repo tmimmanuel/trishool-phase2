@@ -18,6 +18,7 @@ type OpenAiLikeMessage = {
   content?: string | Array<Record<string, unknown>>;
   /** Some OpenAI-compatible / reasoning providers put the visible reply here when `content` is empty. */
   reasoning_content?: string;
+  reasoning?: string;
 };
 
 type OpenAiLikeResponse = {
@@ -94,7 +95,7 @@ function extractAssistantText(payload: OpenAiLikeResponse): string | null {
     }
   }
 
-  const reasoning = message.reasoning_content;
+  const reasoning = message.reasoning_content ?? message.reasoning;
   if (typeof reasoning === "string" && reasoning.trim()) {
     return reasoning.trim();
   }
@@ -195,7 +196,7 @@ export class JudgeClient {
       // through to the next candidate on transient HTTP codes (see FALLBACK_STATUS_CODES).
       const totalAttempts = isLastModel ? this.config.judge.maxRetries + 1 : 1;
 
-      const body = {
+      const body: Record<string, unknown> = {
         model,
         temperature: this.config.judge.temperature ?? 0,
         max_tokens: this.config.judge.maxOutputTokens,
@@ -217,6 +218,10 @@ export class JudgeClient {
           },
         ],
       };
+      if (this.config.judge.baseURL.includes("openlux.ai")) {
+        // OpenLux Qwen models otherwise dump thinking into `reasoning` and leave `content` empty.
+        body.enable_thinking = false;
+      }
 
       for (let attempt = 1; attempt <= totalAttempts; attempt += 1) {
         const controller = new AbortController();

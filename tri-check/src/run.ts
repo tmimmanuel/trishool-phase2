@@ -411,7 +411,8 @@ export function logChutesKey(urls: ResolvedServiceUrls): void {
     );
   }
   const judgeProvider = (process.env.JUDGE_LLM_PROVIDER ?? "chutes").trim() || "chutes";
-  process.stderr.write(`[tri-check] JUDGE_LLM_PROVIDER=${judgeProvider} (judge uses Chutes vs OpenRouter key)\n`);
+  process.stderr.write(`[tri-check] JUDGE_LLM_PROVIDER=${judgeProvider} (judge uses chutes / openlux / openrouter key)\n`);
   process.stderr.write(`[tri-check] X-Chutes-Api-Key (OpenClaw + judge when provider=chutes): ${formatChutesKeyForLog(urls.chutesApiKey)}\n`);
+  process.stderr.write(`[tri-check] X-OpenLux-Api-Key (judge when provider=openlux): ${formatChutesKeyForLog(urls.openluxApiKey)}\n`);
   process.stderr.write(`[tri-check] X-OpenRouter-Api-Key (OpenClaw when set; judge when provider=openrouter): ${formatChutesKeyForLog(urls.openrouterApiKey)}\n`);
 }

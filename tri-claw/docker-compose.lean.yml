@@ -6,8 +6,8 @@
 #
 # Pre-configure auth via ../.env.tri-claw (repo-root; this compose file does not load trishool/.env):
 #   OPENLUX_API_KEY=<your-key>  (required; openclaw.lean.json substitutes ${OPENLUX_API_KEY})
-#   CHUTES_API_KEY=<your-key>   (required for Chutes output-guard classify; also sent as X-Chutes-Api-Key)
-# Agent model, local Halo input URL, and Chutes output-guard URL are in tri-claw/docker/openclaw.lean.json.
+#   CHUTES_API_KEY=<your-key>   (optional; still sent as X-Chutes-Api-Key if OpenClaw classify auth requires it)
+# Agent model, local Halo input URL, and local Qwen3Guard-Stream output URL are in tri-claw/docker/openclaw.lean.json.
 #
 # After setup, all CLI commands run inside the gateway container:
 #   docker compose -f docker-compose.yml -f docker-compose.lean.yml exec openclaw-gateway node dist/index.js tui

@@ -29,6 +29,8 @@ export interface ResolvedServiceUrls {
   chutesApiKey: string;
   /** OpenRouter key; sent as `X-OpenRouter-Api-Key` to OpenClaw when set (alongside Chutes when both set). */
   openrouterApiKey: string;
+  /** OpenLux key; sent as `X-OpenLux-Api-Key` to tri-judge when JUDGE_LLM_PROVIDER=openlux. */
+  openluxApiKey: string;
 }
 
 /** Default local Halo classify target (OpenClaw in Docker: set HALO_LOCAL_CLASSIFY_URL to host.docker.internal). */
@@ -55,6 +57,7 @@ export function resolveServiceUrls(overrides?: {
       (process.env.OPENCLAW_GATEWAY_PASSWORD || process.env.OPENCLAW_GATEWAY_TOKEN || "").trim(),
     chutesApiKey: (process.env.CHUTES_API_KEY || "").trim(),
     openrouterApiKey: (process.env.OPENROUTER_API_KEY || "").trim(),
+    openluxApiKey: (process.env.OPENLUX_API_KEY || "").trim(),
   };
 }
 
@@ -87,7 +90,7 @@ export function redactSecrets(
   fixtureSecrets: string[] = [],
 ): string {
   let result = text;
-  const all = [urls.chutesApiKey, urls.openrouterApiKey, urls.openclawToken, ...fixtureSecrets];
+  const all = [urls.chutesApiKey, urls.openrouterApiKey, urls.openluxApiKey, urls.openclawToken, ...fixtureSecrets];
   for (const secret of all) {
     if (secret && secret.length > 0 && result.includes(secret)) {
       result = result.replaceAll(secret, "[REDACTED]");

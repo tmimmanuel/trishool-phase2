@@ -67,8 +67,16 @@ class AgentClient:
         )
         self.chutes_api_key = (os.getenv("CHUTES_API_KEY") or "").strip()
         self.openrouter_api_key = (os.getenv("OPENROUTER_API_KEY") or "").strip()
+        self.openlux_api_key = (os.getenv("OPENLUX_API_KEY") or "").strip()
         self._secret_values = [
-            v for v in [self.openclaw_token, self.chutes_api_key, self.openrouter_api_key] if v
+            v
+            for v in [
+                self.openclaw_token,
+                self.chutes_api_key,
+                self.openrouter_api_key,
+                self.openlux_api_key,
+            ]
+            if v
         ]
 
         logger.info(
@@ -303,6 +311,8 @@ class AgentClient:
         judge_provider = (os.getenv("JUDGE_LLM_PROVIDER") or "chutes").strip().lower()
         if judge_provider == "openrouter" and self.openrouter_api_key:
             headers["X-OpenRouter-Api-Key"] = self.openrouter_api_key
+        elif judge_provider == "openlux" and self.openlux_api_key:
+            headers["X-OpenLux-Api-Key"] = self.openlux_api_key
         elif self.chutes_api_key:
             headers["X-Chutes-Api-Key"] = self.chutes_api_key
 

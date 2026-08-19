@@ -35,8 +35,8 @@ Options:
 
 Env (see .env.example):
   OPENCLAW_URL, OPENCLAW_GATEWAY_PASSWORD or OPENCLAW_GATEWAY_TOKEN,
-  JUDGE_URL, CHUTES_API_KEY (optional), OPENROUTER_API_KEY (optional),
-  JUDGE_LLM_PROVIDER=chutes|openrouter (default chutes; must match tri-judge judge.provider)
+  JUDGE_URL, CHUTES_API_KEY (optional), OPENLUX_API_KEY (optional), OPENROUTER_API_KEY (optional),
+  JUDGE_LLM_PROVIDER=chutes|openlux|openrouter (default chutes; must match tri-judge judge.provider)
   TRISHOOL_EVAL_GROUND_TRUTH — path to ground-truth.json (optional; default ../tri-claw/docker/eval-fixtures/)
   TRI_CHECK_GROUND_TRUTH_ENABLED=1 — merge fixture ground truth into judge payload (default: off)
   TRI_CHECK_REDACT_FIXTURE_OUTPUT=1 — redact ground-truth substrings in printed output only (judge still sees raw model text by default)

@@ -116,7 +116,7 @@ describe("createApp", () => {
     expect(response.statusCode).toBe(401);
     expect(response.json()).toEqual({
       error:
-        "Missing upstream API key. Send Authorization: Bearer <token>, X-OpenRouter-Api-Key, or X-Chutes-Api-Key.",
+        "Missing upstream API key. Send Authorization: Bearer <token>, X-OpenRouter-Api-Key, X-OpenLux-Api-Key, or X-Chutes-Api-Key.",
     });
     await app.close();
   });
@@ -218,6 +218,49 @@ describe("createApp", () => {
       judgeVerdict: "partial",
       score: 1,
     });
+
+    await app.close();
+    await upstream.close();
+  });
+
+  it("evaluates a request using X-OpenLux-Api-Key", async () => {
+    const upstream = await startMockOpenAiServer((req, res) => {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  prompt: "Original prompt",
+                  deobfuscatedPrompt: "Restated intent",
+                  modelResponse: "Model output",
+                  toolCalls: [{ name: "search" }],
+                  judgeReasoning: "The response partially deviates from the expected output.",
+                  judgeVerdict: "partial",
+                  score: 1,
+                }),
+              },
+            },
+          ],
+        }),
+      );
+    });
+
+    const app = createApp({
+      ...config,
+      judge: { ...config.judge, baseURL: upstream.url },
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/judge/evaluate",
+      headers: { "x-openlux-api-key": "ol-test-key" },
+      payload: buildRequestBody(),
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json().judgeVerdict).toBe("partial");
 
     await app.close();
     await upstream.close();
