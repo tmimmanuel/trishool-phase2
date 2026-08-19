@@ -560,7 +560,11 @@ def main() -> None:
         help="HF model id or local directory (default: %(default)s)",
     )
     parser.add_argument("--model-revision", default=None, help="Optional HF revision / branch / tag")
-    parser.add_argument("--host", default="127.0.0.1", help="Bind host")
+    parser.add_argument(
+        "--host",
+        default="127.0.0.1",
+        help="Bind host, or comma-separated hosts (e.g. 127.0.0.1,172.18.0.1) so Docker can reach the guard without binding 0.0.0.0",
+    )
     parser.add_argument("--port", type=int, default=8000, help="Bind port")
     parser.add_argument("--device", default="auto", help="auto, cpu, cuda, or mps")
     parser.add_argument("--dtype", default="auto", help="auto, float16, bfloat16, float32")
@@ -644,12 +648,33 @@ def main() -> None:
     )
 
     log.info("=== PHASE 4/4: bind HTTP server ===")
-    server = OpenAICompatServer((args.host, args.port), OpenAICompatHandler, state)
-    log.info("=== READY: Serving on http://%s:%d (GET /health should work now) ===", args.host, args.port)
+    hosts = [h.strip() for h in str(args.host).split(",") if h.strip()]
+    if not hosts:
+        raise SystemExit("serve_halo_guard: --host is empty")
+
+    servers: list[OpenAICompatServer] = []
+    for host in hosts:
+        try:
+            server = OpenAICompatServer((host, args.port), OpenAICompatHandler, state)
+            servers.append(server)
+            log.info("=== READY: Serving on http://%s:%d (GET /health should work now) ===", host, args.port)
+        except OSError as e:
+            log.warning("serve_halo_guard: could not bind %s:%d (%s)", host, args.port, e)
+
+    if not servers:
+        raise SystemExit(f"serve_halo_guard: failed to bind any of {hosts} port {args.port}")
+
     log.info("  POST /v1/classify          - Halo JSON")
     log.info("  POST /v1/chat/completions  - OpenAI-style envelope")
     log.info("  GET  /health               - Health check")
-    server.serve_forever()
+
+    for extra in servers[1:]:
+        threading.Thread(
+            target=extra.serve_forever,
+            name=f"halo-{extra.server_address[0]}",
+            daemon=True,
+        ).start()
+    servers[0].serve_forever()
 
 
 if __name__ == "__main__":

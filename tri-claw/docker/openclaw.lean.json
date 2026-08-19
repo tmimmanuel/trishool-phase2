@@ -30,12 +30,18 @@
       "workspace": "/home/node/.openclaw/workspace",
       "timeoutSeconds": 370,
       "model": {
-        "primary": "chutes/Qwen/Qwen3.6-27B-TEE"
+        "primary": "openlux/qwen3.6-27b"
       },
       "models": {
         "chutes-default": { "alias": "chutes/Qwen/Qwen3.6-27B-TEE" },
+        "openlux-default": { "alias": "openlux/qwen3.6-27b" },
         "openrouter-default": { "alias": "openrouter/qwen/qwen3-32b" },
         "chutes/Qwen/Qwen3.6-27B-TEE": {
+          "params": {
+            "enable_thinking": false
+          }
+        },
+        "openlux/qwen3.6-27b": {
           "params": {
             "enable_thinking": false
           }
@@ -93,8 +99,8 @@
           },
           "input": {
             "enabled": true,
-            "classifyUrl": "https://astroboi-halo-guard.chutes.ai/v1/classify",
-            "classifyModel": "halo-guard",
+            "classifyUrl": "http://host.docker.internal:8000/v1/classify",
+            "classifyModel": "astroware/Halo0.8B-guard-v1",
             "payloadMode": "latest_user_message",
             "queryMode": "text_extract",
             "refusalText": "Blocked by input guard model."
@@ -113,6 +119,23 @@
   },
   "models": {
     "providers": {
+      "openlux": {
+        "baseUrl": "https://api.openlux.ai/v1",
+        "api": "openai-completions",
+        "auth": "api-key",
+        "apiKey": "${OPENLUX_API_KEY}",
+        "models": [
+          {
+            "id": "qwen3.6-27b",
+            "name": "OpenLux qwen3.6-27b",
+            "reasoning": false,
+            "input": ["text"],
+            "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+            "contextWindow": 256000,
+            "maxTokens": 16384
+          }
+        ]
+      },
       "chutes": {
         "baseUrl": "https://llm.chutes.ai/v1",
         "api": "openai-completions",

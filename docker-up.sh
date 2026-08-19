@@ -166,7 +166,9 @@ if [[ "$START_LOCAL_HALO_GUARD" -eq 1 ]]; then
     echo "docker-up.sh: using python: $py" >&2
   fi
   port="${HALO_GUARD_PORT:-8000}"
-  bind="${HALO_GUARD_BIND:-0.0.0.0}"
+  # Bind loopback + Docker bridges so OpenClaw can use host.docker.internal:8000
+  # without exposing classify on 0.0.0.0 (UFW is often inactive on this VPS).
+  bind="${HALO_GUARD_BIND:-127.0.0.1,172.17.0.1,172.18.0.1}"
   model="${HALO_GUARD_MODEL:-astroware/Halo0.8B-guard-v1}"
   logdir="$ROOT/logs"
   mkdir -p "$logdir"

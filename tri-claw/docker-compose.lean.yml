@@ -4,9 +4,10 @@
 #   docker build -f Dockerfile.lean -t openclaw:lean .
 #   OPENCLAW_IMAGE=openclaw:lean docker compose -f docker-compose.yml -f docker-compose.lean.yml up -d
 #
-# Pre-configure Chutes auth via ../.env.tri-claw (repo-root; this compose file does not load trishool/.env):
-#   CHUTES_API_KEY=<your-key>  (optional for /v1/chat/completions: send X-Chutes-Api-Key per request instead)
-# Model base URL and fallback chain are defined in tri-claw/docker/openclaw.lean.json.
+# Pre-configure auth via ../.env.tri-claw (repo-root; this compose file does not load trishool/.env):
+#   OPENLUX_API_KEY=<your-key>  (required; openclaw.lean.json substitutes ${OPENLUX_API_KEY})
+#   CHUTES_API_KEY=<your-key>   (required for Chutes output-guard classify; also sent as X-Chutes-Api-Key)
+# Agent model, local Halo input URL, and Chutes output-guard URL are in tri-claw/docker/openclaw.lean.json.
 #
 # After setup, all CLI commands run inside the gateway container:
 #   docker compose -f docker-compose.yml -f docker-compose.lean.yml exec openclaw-gateway node dist/index.js tui
@@ -44,13 +45,16 @@ services:
       OPENCLAW_ACCEPT_RISK: "1"
       OPENCLAW_GATEWAY_PORT: ${OPENCLAW_GATEWAY_PORT:-18789}
       OPENCLAW_GATEWAY_PASSWORD: ${OPENCLAW_GATEWAY_PASSWORD:-}
-      # CHUTES_* and CLAUDE_* come from env_file (../.env.tri-claw) — do NOT redeclare
-      # them here with ${VAR:-} defaults or the environment: section will override
-      # the .env values with empty strings (environment > env_file precedence).
+      # CHUTES_*, OPENLUX_*, and CLAUDE_* come from env_file (../.env.tri-claw) — do NOT
+      # redeclare them here with ${VAR:-} defaults or the environment: section will
+      # override the .env values with empty strings (environment > env_file precedence).
       CLAUDE_AI_SESSION_KEY: ${CLAUDE_AI_SESSION_KEY:-}
       CLAUDE_WEB_SESSION_KEY: ${CLAUDE_WEB_SESSION_KEY:-}
       CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE:-}
     image: ${OPENCLAW_IMAGE:-openclaw:lean}
+    extra_hosts:
+      # Linux: map host.docker.internal to the host so local Halo on :8000 is reachable.
+      - "host.docker.internal:host-gateway"
     networks:
       - tri-shared
 
