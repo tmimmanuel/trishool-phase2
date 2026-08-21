@@ -91,7 +91,11 @@ if os.environ.get("HALO_GUARD_QUIET_DOWNLOAD") != "1":
             kw["disable"] = False
         return factory(*args, **kw)
 
-    transformers_utils_logging.set_tqdm_hook(_tqdm_logfile_hook)
+    try:
+        transformers_utils_logging.set_tqdm_hook(_tqdm_logfile_hook)
+    except Exception:  # pragma: no cover
+        # Older/newer transformers may lack set_tqdm_hook (e.g. 4.46.x). Non-fatal.
+        pass
 
 try:
     from huggingface_hub import constants as _hf_constants

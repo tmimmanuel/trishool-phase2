@@ -20,6 +20,13 @@ export type JudgeResponse = {
   score: number;
 };
 
+export type JudgeProviderBranch = {
+  baseURL: string;
+  model: string;
+  models: string[];
+  chatTemplateKwargs?: Record<string, unknown>;
+};
+
 export type AppConfig = {
   /** Semver for this deployment; served at GET /version (alignet spec encoding). */
   version?: string;
@@ -28,6 +35,8 @@ export type AppConfig = {
     port: number;
   };
   judge: {
+    defaultProvider?: string;
+    providers?: Record<string, JudgeProviderBranch>;
     baseURL: string;
     model: string;
     models: string[];

@@ -489,17 +489,49 @@ function truncateDetail(text: string, maxChars: number): string {
   return `${t.slice(0, maxChars)}…`;
 }
 
+function resolveProviderBranch(
+  config: AppConfig,
+  providerId?: string,
+): { id: string | undefined; baseURL: string; models: string[]; chatTemplateKwargs?: Record<string, unknown> } {
+  const requested = providerId?.trim();
+  if (requested) {
+    const branch = config.judge.providers?.[requested];
+    if (!branch) {
+      const known = Object.keys(config.judge.providers ?? {});
+      throw new JudgeUpstreamError(
+        `Unknown judge provider "${requested}". Known: ${known.length ? known.join(", ") : "(none)"}.`,
+        400,
+      );
+    }
+    return {
+      id: requested,
+      baseURL: branch.baseURL,
+      models: branch.models.length > 0 ? branch.models : [branch.model],
+      chatTemplateKwargs: branch.chatTemplateKwargs,
+    };
+  }
+  return {
+    id: config.judge.defaultProvider,
+    baseURL: config.judge.baseURL,
+    models: config.judge.models.length > 0 ? config.judge.models : [config.judge.model],
+    chatTemplateKwargs: config.judge.chatTemplateKwargs,
+  };
+}
+
 export class JudgeClient {
   constructor(
     private readonly config: AppConfig,
     private readonly fetchImpl: typeof fetch = fetch,
   ) {}
 
-  async evaluate(input: EvaluateQuestionRequest, apiKey: string): Promise<JudgeResponse> {
-    const url = resolveCompletionUrl(this.config.judge.baseURL);
-    const modelChain = this.config.judge.models.length > 0
-      ? this.config.judge.models
-      : [this.config.judge.model];
+  async evaluate(
+    input: EvaluateQuestionRequest,
+    apiKey: string,
+    providerId?: string,
+  ): Promise<JudgeResponse> {
+    const upstream = resolveProviderBranch(this.config, providerId);
+    const url = resolveCompletionUrl(upstream.baseURL);
+    const modelChain = upstream.models;
     let lastError: Error | null = null;
     let lastMalformedJudgeResponse: { raw: string; reason: string } | null = null;
 
@@ -515,8 +547,8 @@ export class JudgeClient {
         temperature: this.config.judge.temperature ?? 0,
         max_tokens: this.config.judge.maxOutputTokens,
         response_format: { type: "json_object" },
-        ...(this.config.judge.chatTemplateKwargs
-          ? { chat_template_kwargs: this.config.judge.chatTemplateKwargs }
+        ...(upstream.chatTemplateKwargs
+          ? { chat_template_kwargs: upstream.chatTemplateKwargs }
           : {}),
         messages: [
           {
@@ -535,7 +567,7 @@ export class JudgeClient {
           },
         ],
       };
-      if (this.config.judge.baseURL.includes("openlux.ai")) {
+      if (upstream.baseURL.includes("openlux.ai") || upstream.id === "openlux") {
         // OpenLux Qwen models otherwise dump thinking into `reasoning` and leave `content` empty.
         body.enable_thinking = false;
       }

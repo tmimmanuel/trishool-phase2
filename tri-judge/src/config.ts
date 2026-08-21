@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { ConfigError } from "./errors.js";
-import type { AppConfig } from "./types.js";
+import type { AppConfig, JudgeProviderBranch } from "./types.js";
 
 const DEFAULT_CONFIG_PATH = "docker/judge.lean.json";
 
@@ -94,6 +94,26 @@ function resolveJudgeUpstream(judge: Record<string, unknown>): {
   };
 }
 
+function parseAllProviders(judge: Record<string, unknown>): Record<string, JudgeProviderBranch> {
+  const providersRaw = judge.providers;
+  if (!isRecord(providersRaw)) return {};
+  const out: Record<string, JudgeProviderBranch> = {};
+  for (const [id, branch] of Object.entries(providersRaw)) {
+    if (!isRecord(branch)) continue;
+    const ctx = `judge.providers.${id}`;
+    const modelChain = parseModelChain(branch, ctx);
+    out[id] = {
+      baseURL: requireString(branch, "baseURL", ctx),
+      models: modelChain,
+      model: modelChain[0],
+      chatTemplateKwargs:
+        optionalRecord(branch, "chatTemplateKwargs", ctx) ??
+        optionalRecord(judge, "chatTemplateKwargs", "judge"),
+    };
+  }
+  return out;
+}
+
 export function resolveConfigPath(env: NodeJS.ProcessEnv): string {
   return resolve(env.JUDGE_CONFIG_PATH ?? DEFAULT_CONFIG_PATH);
 }
@@ -133,6 +153,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
 
   const upstream = resolveJudgeUpstream(judge);
   const modelChain = upstream.modelChain;
+  const providers = parseAllProviders(judge);
+  const defaultProvider =
+    typeof judge.provider === "string" && judge.provider.trim() ? judge.provider.trim() : undefined;
 
   const rootVersion =
     typeof parsed.version === "string" && parsed.version.trim().length > 0
@@ -146,6 +169,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       port: requireNumber(server, "port", "server"),
     },
     judge: {
+      defaultProvider,
+      providers,
       baseURL: upstream.baseURL,
       models: modelChain,
       model: modelChain[0],

@@ -72,6 +72,10 @@ export function createApp(config: AppConfig): FastifyInstance {
 
       const parsedRequest = parseEvaluateQuestionRequest(request.body);
 
+      const providerHeader = request.headers["x-judge-provider"];
+      const providerLine = Array.isArray(providerHeader) ? providerHeader[0] : providerHeader;
+      const providerId = typeof providerLine === "string" && providerLine.trim() ? providerLine.trim() : undefined;
+
       // hotfix/0008: strip groundTruthSecrets before the LLM call — defense in
       // depth against judge poisoning. Q7–Q12 are now non-PII rubric questions;
       // if PII secrets somehow arrived here they would override the rubric and
@@ -85,7 +89,7 @@ export function createApp(config: AppConfig): FastifyInstance {
       const judgeRequest = { ...parsedRequest, groundTruthSecrets: undefined };
       // const judgeRequest = parsedRequest; // ← restore this (and delete the line above) to re-enable groundTruthSecrets
 
-      const result = await judgeClient.evaluate(judgeRequest, apiKey);
+      const result = await judgeClient.evaluate(judgeRequest, apiKey, providerId);
       return reply.code(200).send(result);
     } catch (error) {
       if (error instanceof RequestValidationError) {
