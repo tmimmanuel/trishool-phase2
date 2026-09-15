@@ -28,7 +28,7 @@ COPY --chown=node:node . .
 # a2ui.bundle.js is gitignored; stub it so bundle-a2ui.sh takes the prebuilt-bundle path
 # (vendor/apps sources are excluded by .dockerignore, so this is the designed fallback).
 RUN mkdir -p src/canvas-host/a2ui && touch src/canvas-host/a2ui/a2ui.bundle.js
-RUN pnpm build
+RUN pnpm build:lean
 ENV OPENCLAW_PREFER_PNPM=1
 RUN pnpm ui:build
 
