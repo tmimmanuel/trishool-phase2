@@ -19,6 +19,7 @@ wheels/
 # Virtual environments
 *.venv
 .venv-miner/
+miner-venv/
 
 # Env files
 *.env
