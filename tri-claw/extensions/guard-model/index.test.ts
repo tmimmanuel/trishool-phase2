@@ -165,6 +165,7 @@ describe("guard-model helpers", () => {
     ).toEqual({
       decision: "block",
       reason: undefined,
+      probability: 0.9124361872673035,
     });
     expect(
       __testing.parseChutesClassifyResponse({
@@ -175,6 +176,7 @@ describe("guard-model helpers", () => {
     ).toEqual({
       decision: "block",
       reason: "unsafe",
+      probability: 0.91,
     });
     expect(
       __testing.parseChutesClassifyResponse({
@@ -185,6 +187,22 @@ describe("guard-model helpers", () => {
     ).toEqual({
       decision: "allow",
       reason: "harmless",
+      probability: 0.12,
+    });
+    expect(
+      __testing.parseChutesClassifyResponse({
+        status: "HARMFUL",
+        category: "unethical_acts",
+        attack_overlay: "none",
+        unsafe_prob: 0.9876,
+        unsafe_prob_calibrated: 0.9231,
+        confidence: 0.9876,
+      }),
+    ).toEqual({
+      decision: "block",
+      reason: "unethical_acts; none",
+      probability: 0.9876,
+      probabilityCalibrated: 0.9231,
     });
   });
 
@@ -260,6 +278,17 @@ describe("guard-model helpers", () => {
         maxChars: 1000,
       }),
     ).toBe("hello world");
+  });
+
+  it("buildClassifyQueryString text_extract pairs the user prompt with the assistant reply", () => {
+    expect(
+      __testing.buildClassifyQueryString({
+        phase: "output",
+        payload: { userText: "sell fake credits", assistantText: "statutes\nlabel" },
+        queryMode: "text_extract",
+        maxChars: 1000,
+      }),
+    ).toBe("USER:\nsell fake credits\n\nASSISTANT:\nstatutes\nlabel");
   });
 
   it("buildClassifyQueryString text_extract uses latest user text for input", () => {
